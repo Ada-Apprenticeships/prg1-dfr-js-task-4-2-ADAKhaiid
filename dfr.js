@@ -34,6 +34,21 @@ function dataDimensions(dataframe) {
   return [rows, columns];
 }
 
+function findTotal(dataset) {
+  let total = 0;
+  
+  if (!Array.isArray(dataset) || (dataset.length > 0 && Array.isArray(dataset[0]))) {
+    return 0; 
+  }
+
+  for (const item of dataset) {
+    if (validNumber(item)) {
+        total += parseFloat(item);
+    }
+  }
+  return total;
+}
+
 function calculateMean(dataset) {
   let sum = 0;
   let count = 0;
@@ -50,40 +65,6 @@ function calculateMean(dataset) {
   }
   return count > 0 ? sum / count : 0;
 }
-
-function findTotal(dataset) {
-  let total = 0;
-  
-  if (!Array.isArray(dataset) || (dataset.length > 0 && Array.isArray(dataset[0]))) {
-    return 0; 
-  }
-
-  for (const item of dataset) {
-    if (validNumber(item)) {
-        total += parseFloat(item);
-    }
-  }
-  return total;
-}
-
-
-function convertToFloat(dataframe, col){ //dataframe, integer
-  // returns an integer, which is the number that were  converted to floats.
-  
-}
-
-
-function flatten(dataframe) {
-  // returns a dataset (a flattened dataframe)
-  
-}
-
-
-function loadCSV(csvFile, ignorerows, ignorecols) {  // string, dataset, dataset
-  // returns a list comprising of [dataframe, rows (integer), cols (integer)]
-
-}
-
 
 function calculateMedian(dataset) {
   if (!Array.isArray(dataset)) {
@@ -121,7 +102,32 @@ function calculateMedian(dataset) {
   
 }
 
-console.log(calculateMedian(10, 20, "30", 40 , 50))
+function convertToNumber(dataframe, col){ 
+  let totalConversions = 0;
+  // Goes through each value of the array
+  for (let i = 0; i < dataframe.length; i++) {
+    const value = dataframe[i][col];
+    // Checks if the value is a string that can be converted to a number
+    if (typeof value == 'string' && !isNaN(value)) {
+      dataframe[i][col] = parseFloat(value);  // Convert to float
+      totalConversions++;  // Counts the total conversions
+    }
+  } 
+  return totalConversions;
+}
+
+function flatten(dataframe) {
+  // returns a dataset (a flattened dataframe)
+  
+}
+
+function loadCSV(csvFile, ignorerows, ignorecols) {  // string, dataset, dataset
+  // returns a list comprising of [dataframe, rows (integer), cols (integer)]
+
+}
+
+
+
 
 function createSlice(dataframe, colindex, colpattern, exportcols = []) { // dataframe, integer, string/numeric, dataset
   // returns a dataframe
@@ -129,7 +135,7 @@ function createSlice(dataframe, colindex, colpattern, exportcols = []) { // data
 }
 
 
-console.log(fileExists(inputFile))
+
 
 
 
@@ -138,6 +144,6 @@ console.log(fileExists(inputFile))
 
 
 module.exports = {
-  fileExists, validNumber, dataDimensions, calculateMean, findTotal, convertToFloat, flatten, 
+  fileExists, validNumber, dataDimensions, calculateMean, findTotal, convertToNumber, flatten, 
   loadCSV, calculateMedian, createSlice,
 } 
