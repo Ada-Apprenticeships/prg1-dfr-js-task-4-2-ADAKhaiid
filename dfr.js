@@ -1,19 +1,17 @@
 const fs = require('fs'); 
-// The neccessary file for this task
-const inputFile = "datatrafficdataset_2000.csv";
 
 function fileExists(filename) {
   // If the file exists 
   if (fs.existsSync(filename)) {
-    return true
+    return true;
   }
-  return false
+  return false;
 }
   
 function validNumber(value) { 
   const strValue = String(value);
   // Check if the string is a valid number using a regex
-  const isNumber = /^-?\d+(\.\d+)?$/.test(strValue); // Alows any Integer or float, positive or negative
+  const isNumber = /^-?\d+(\.\d+)?$/.test(strValue); // Allows any Integer or float, positive or negative
   return isNumber;
 }
 
@@ -66,7 +64,7 @@ function calculateMean(dataset) {
     }
   }
 
-  // Uses a conditional statment to either output the mean or 0 
+  // Uses a conditional statement to either output the mean or 0 
   return count > 0 ? sum / count : 0;
 }
 
@@ -101,8 +99,8 @@ function calculateMedian(dataset) {
     return validNumbers[middle]; // Return the middle value
   } 
   else {
-  // If the number of valid numbers is even
-  return (validNumbers[middle - 1] + validNumbers[middle]) / 2; // Returns the average of the two middle values
+    // If the number of valid numbers is even
+    return (validNumbers[middle - 1] + validNumbers[middle]) / 2; // Returns the average of the two middle values
   } 
 }
 
@@ -129,24 +127,85 @@ function flatten(dataframe) {
     const values = []; // Creates an array to hold the column values
 
     // Collects the values from the columns of all the rows
-    for (var i = 0; i < dataframe.length; i++) {
+    for (i = 0; i < dataframe.length; i++) {
       values.push(dataframe[i][column]); // Pushes the value of the specified column
     }
-    // Returns the collected values
     return values; 
   }
   // Return an empty array if the structure is invalid
   return []; 
 }
 
-function loadCSV(csvFile, ignorerows, ignorecols) {  // string, dataset, dataset
-  // returns a list comprising of [dataframe, rows (integer), cols (integer)]
+function createSlice(dataframe, columnIndex, colpattern, exportColumns = []) {
+  // Check for valid dataframe
+  if (!Array.isArray(dataframe[0])) {
+    return []; 
+  }
+  const slicedData = []; // Array to hold sliced data rows
 
+  // Loop through each row of the dataframe
+  for (let i = 0; i < dataframe.length; i++) {
+    const row = dataframe[i];
+
+    // Checks if the pattern matches the value in the specified column
+    if (colpattern === '*' || row[columnIndex] === colpattern) {
+      // Selects the columns to export based on exportColumns array
+      const selectedColumns = exportColumns.length > 0
+        ? exportColumns.map(index => row[index]).filter(val => val !== undefined) // Only valid indices
+        : row; // If there are no specific columns, export the entire row
+
+      slicedData.push(selectedColumns); 
+    }
+  }
+
+  return slicedData; 
 }
 
-function createSlice(dataframe, colindex, colpattern, exportcols = []) { // dataframe, integer, string/numeric, dataset
-  // returns a dataframe
-  
+function loadCSV(csvFile, ignoreRows = [], ignoreCols = []) {
+  let dataframe = [];
+  let totalRows = 0;  
+  let totalColumns = 0;  
+
+  try {
+    // Reads the CSV file contents
+    const fileContents = fs.readFileSync(csvFile, 'utf8');
+    // This will split the contents into rows
+    const rows = fileContents.split('\n');
+    totalRows = rows.length;
+
+    for (let i = 0; i < rows.length; i++) {
+      
+      // Skip ignoreds rows
+      if (ignoreRows.includes(i)) continue;
+      // Split rows into columns
+      const columns = rows[i].split(',');
+      
+      // Skip empty lines
+      if (columns.length === 1 && columns[0].trim() === '') continue;
+      let newRow = []; // Array to hold each row's columns
+
+      for (let j = 0; j < columns.length; j++) {
+        // Skips ignored columns
+        if (!ignoreCols.includes(j)) {
+          newRow.push(columns[j].trim() || ""); 
+        }
+      }
+      
+      // Sets the total columns for the first valid row
+      if (totalColumns === 0) {
+        totalColumns = columns.length;
+      }
+      dataframe.push(newRow); // Adds the row to the dataframe
+    }
+  } 
+
+  catch (error) {
+    // Logs error if reading the file fails
+    console.error("Error reading the CSV file:", error);
+    return [[], -1, -1];
+  }
+
+  return [dataframe, totalRows, totalColumns]; 
 }
 
 module.exports = {
